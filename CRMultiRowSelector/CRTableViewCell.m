@@ -80,6 +80,7 @@
 		[_backgroundMarkView setOpaque:YES];
 		
 		markColor = kBlueColor;
+		_markCircleColor = [UIColor colorWithRed:229/255.0 green:229/255.0 blue:229/255.0 alpha:1.0];
 		
 		_backgroundDefault = nil;
 		_backgroundHighlighted = nil;
@@ -175,12 +176,19 @@
 	if (color != markColor) {
 		markColor = color;
 		_selectedImage = nil;
-		_unselectedImage = nil;
 	}
 }
 
 - (UIColor *)markColor {
 	return colorWithRGBHex(markColor);
+}
+
+- (void)setMarkCircleColor:(UIColor *)markCircleColor {
+	if (![_markCircleColor isEqual:markCircleColor]) {
+		_markCircleColor = markCircleColor;
+	
+		_unselectedImage = nil;
+	}
 }
 
 - (void)setBorderHidden:(BOOL)borderHidden {
@@ -228,7 +236,7 @@
         CGContextAddPath(ctx, markCircle.CGPath);
         CGContextSetLineWidth(ctx, kStrokeWidth);
         CGContextSetRGBFillColor(ctx, 1.0, 1.0, 1.0, 0.0);
-        CGContextSetRGBStrokeColor(ctx, 229/255.0, 229/255.0, 229/255.0, 1.0);
+        CGContextSetStrokeColorWithColor(ctx, [_markCircleColor CGColor]);
         CGContextDrawPath(ctx, kCGPathFillStroke);
     }
     CGContextRestoreGState(ctx);
