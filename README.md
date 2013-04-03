@@ -43,7 +43,7 @@ How To Use
     
     // Check if the cell is currently selected (marked)
     NSString *text = [dataSource objectAtIndex:[indexPath row]];
-    cell.isSelected = [selectedMarks containsObject:text] ? YES : NO;
+    cell.marked = [selectedMarks containsObject:text] ? YES : NO;
     cell.textLabel.text = text;
     
     return cell;
@@ -57,20 +57,17 @@ How To Use
 {
     NSString *text = [dataSource objectAtIndex:[indexPath row]];
     
-    if ([selectedMarks containsObject:text])// Is selected?
+    if ([selectedMarks containsObject:text]) {// Is selected?
         [selectedMarks removeObject:text];
-    else
+    } else {
         [selectedMarks addObject:text];
-    
+    }
+
     [tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 ```
 
- - You can customize the mark color using a HEX color, just change this line in the **CRTableViewCell.m** file
-
-```objective-c
-#define kMarkColor                  kBlueColor // or your HEX color, example: 0xfff000
-```
+ - You can customize the mark color (**setMarkColor**), the border color (**setBorderColor**) and the mark circle color (**setMarkCircleColor**)
 
  - Optionally you can get the selected cells using your previous declared **NSMutableArray** (example):
 
@@ -87,8 +84,9 @@ Requirements
 ----------
 * Xcode 4.3 or higher
 * LLVM compiler
-* iOS 4.3 or higher
+* iOS 5.0 or higher
 * CoreGraphics Framework
+* QuartzCore Framework
 * ARC
 
 ## License
