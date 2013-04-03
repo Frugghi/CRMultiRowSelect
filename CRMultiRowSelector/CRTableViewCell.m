@@ -34,7 +34,6 @@
 #define kBlueColor                  0x236ed8
 #define kGreenColor                 0x179714
 #define kRedColor                   0xa4091c
-#define kMarkColor                  kBlueColor
 
 /* Colums and cell constants */
 #define kAnimationDuration			1.0
@@ -49,6 +48,8 @@
 #endif
 
 @interface CRTableViewCell () {
+	NSUInteger markColor;
+	
 	CALayer *_borderLayer;
 	UIView *_backgroundMarkView;
 	UIImage *_backgroundDefault;
@@ -77,6 +78,8 @@
 		_backgroundMarkView = [[UIView alloc] init];
 		[_backgroundMarkView setUserInteractionEnabled:YES];
 		[_backgroundMarkView setOpaque:YES];
+		
+		markColor = kBlueColor;
 		
 		_backgroundDefault = nil;
 		_backgroundHighlighted = nil;
@@ -153,6 +156,25 @@
 
 #pragma mark - Properties
 
+- (void)setMarkColor:(UIColor *)markColor_ {
+	CGFloat red;
+	CGFloat green;
+	CGFloat blue;
+	
+	[markColor_ getRed:&red green:&green blue:&blue alpha:NULL];
+	
+	NSUInteger color = (int)(red * 255) << 16 | (int)(green * 255) << 8 | (int)(blue * 255) << 0;
+	if (color != markColor) {
+		markColor = color;
+		_selectedImage = nil;
+		_unselectedImage = nil;
+	}
+}
+
+- (UIColor *)markColor {
+	return colorWithRGBHex(markColor);
+}
+
 - (void)setAlwaysShowMark:(BOOL)alwaysShowMark {
 	if (alwaysShowMark && !_alwaysShowMark) {
 		[_backgroundMarkView removeFromSuperview];
@@ -217,7 +239,7 @@
     CGContextSaveGState(ctx);
     {
         CGContextAddPath(ctx, markCircle.CGPath);
-        CGContextSetFillColorWithColor(ctx, clearColorWithRGBHex(kMarkColor).CGColor);
+        CGContextSetFillColorWithColor(ctx, clearColorWithRGBHex(markColor).CGColor);
         CGContextSetShadowWithColor(ctx, kShadowOffset, kShadowRadius, kShadowColor.CGColor );
         CGContextDrawPath(ctx, kCGPathFill);
     }
@@ -229,7 +251,7 @@
         CGContextAddPath(ctx, markCircle.CGPath);
         CGContextClip(ctx);
         CGContextAddEllipseInRect(ctx, kCircleOverlayRect);
-        CGContextSetFillColorWithColor(ctx, colorWithRGBHex(kMarkColor).CGColor);
+        CGContextSetFillColorWithColor(ctx, colorWithRGBHex(markColor).CGColor);
         CGContextDrawPath(ctx, kCGPathFill);
     }
     CGContextRestoreGState(ctx);
