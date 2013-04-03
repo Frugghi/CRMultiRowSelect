@@ -25,8 +25,7 @@
         
         self.title = @"CRMultiRowSelect";
         
-        UIBarButtonItem *rightButton = [[UIBarButtonItem alloc] initWithTitle:@"Done"
-                                                                        style:UIBarButtonSystemItemDone target:self action:@selector(done:)];
+        UIBarButtonItem *rightButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemEdit target:self action:@selector(done:)];
         self.navigationItem.rightBarButtonItem = rightButton;
         
         dataSource = [[NSArray alloc] initWithObjects:
@@ -55,6 +54,8 @@
                       nil];
         
         selectedMarks = [NSMutableArray new];
+		
+		//[self.tableView setAllowsSelectionDuringEditing:YES];
         
     }
     return self;
@@ -77,12 +78,26 @@
 }
 
 #pragma mark - Methods
+
 - (void)done:(id)sender
 {
+	[self.tableView setEditing:!self.tableView.editing animated:YES];
+	if ([self.tableView isEditing]) {
+		UIBarButtonItem *rightButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(done:)];
+        self.navigationItem.rightBarButtonItem = rightButton;
+	} else {
+		UIBarButtonItem *rightButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemEdit target:self action:@selector(done:)];
+        self.navigationItem.rightBarButtonItem = rightButton;
+	}
     NSLog(@"%@", selectedMarks);
 }
 
 #pragma mark - UITableView Data Source
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+	return 44.0f;
+}
+
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     return [dataSource count];
@@ -93,7 +108,7 @@
     static NSString *CRTableViewCellIdentifier = @"cellIdentifier";
     
     // init the CRTableViewCell
-    CRTableViewCell *cell = (CRTableViewCell *)[tableView dequeueReusableCellWithIdentifier:CRTableViewCellIdentifier];
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CRTableViewCellIdentifier];
     
     if (cell == nil) {
         cell = [[CRTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CRTableViewCellIdentifier];
@@ -101,21 +116,35 @@
     
     // Check if the cell is currently selected (marked)
     NSString *text = [dataSource objectAtIndex:[indexPath row]];
-    cell.isSelected = [selectedMarks containsObject:text] ? YES : NO;
-    cell.textLabel.text = text;
+    [(CRTableViewCell *)cell setMarked:[selectedMarks containsObject:text] ? YES : NO];
+    [[cell textLabel] setText:text];
     
     return cell;
 }
 
+- (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath {
+	return UITableViewCellEditingStyleDelete;
+}
+
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+	return YES;
+}
+
+- (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
+	
+}
+
 #pragma mark - UITableView Delegate
+
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     NSString *text = [dataSource objectAtIndex:[indexPath row]];
     
-    if ([selectedMarks containsObject:text])// Is selected?
+    if ([selectedMarks containsObject:text]) {// Is selected?
         [selectedMarks removeObject:text];
-    else
+	} else {
         [selectedMarks addObject:text];
+	}
     
     [tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
 }

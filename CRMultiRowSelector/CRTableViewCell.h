@@ -10,9 +10,10 @@
 
 @interface CRTableViewCell : UITableViewCell
 
-@property (nonatomic, assign) BOOL isSelected;
-@property (nonatomic, readonly, strong) UILabel *textLabel;
-@property (nonatomic, readonly, strong) UIImageView *imageView;
-@property (nonatomic, readonly, strong) UIImage *renderedMark;
+@property (nonatomic, assign) BOOL alwaysShowMark;
+@property (nonatomic, assign, getter = isMarked) BOOL marked;
+@property (nonatomic, readonly, strong) UIImageView *markView;
+@property (nonatomic, readonly, strong) UIImage *markedImage;
+@property (nonatomic, readonly, strong) UIImage *unmarkedImage;
 
 @end

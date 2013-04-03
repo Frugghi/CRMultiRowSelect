@@ -7,15 +7,15 @@
 //
 
 #import "CRTableViewCell.h"
+#import <QuartzCore/QuartzCore.h>
 
 /* Macro for background colors */
 #define colorWithRGBHex(hex)[UIColor colorWithRed:((float)((hex&0xFF0000)>>16))/255.0 green:((float)((hex&0xFF00)>>8))/255.0 blue:((float)(hex&0xFF))/255.0 alpha:1.0]
 #define clearColorWithRGBHex(hex)[UIColor colorWithRed:MIN((((int)(hex>>16)&0xFF)/255.0)+.1,1.0)green:MIN((((int)(hex>>8)&0xFF)/255.0)+.1,1.0)blue:MIN((((int)(hex)&0xFF)/255.0)+.1,1.0)alpha:1.0]
 
 /* Unselected mark constants */
-#define kCircleRadioUnselected      23.0
-#define kCircleLeftMargin           13.0
 #define kCircleRect                 CGRectMake(3.5, 2.5, 22.0, 22.0)
+#define kCircleRectUnselected       CGRectMake(3.5, 2.5, 23.0, 23.0)
 #define kCircleOverlayRect          CGRectMake(1.5, 12.5, 26.0, 23.0)
 
 /* Mark constants */
@@ -37,88 +37,178 @@
 #define kMarkColor                  kBlueColor
 
 /* Colums and cell constants */
-#define kColumnPosition             50.0
-#define kMarkCell                   60.0
-#define kImageRect                  CGRectMake(10.0, 8.0, 30.0, 30.0)
+#define kAnimationDuration			1.0
+#define kColumnPosition             44.0
+
+/* Macro for float comparison */
+#ifndef float_epsilon
+	#define float_epsilon 0.01
+#endif
+#ifndef float_equal
+	#define float_equal(a,b) (fabs((a) - (b)) < float_epsilon)
+#endif
+
+@interface CRTableViewCell () {
+	CALayer *_borderLayer;
+	UIView *_backgroundMarkView;
+	UIImage *_backgroundDefault;
+	UIImage *_backgroundHighlighted;
+	UIImage *_selectedImage;
+	UIImage *_unselectedImage;
+}
+
+@end
 
 @implementation CRTableViewCell
 
-@synthesize isSelected = _isSelected;
-@synthesize textLabel = label;
-@synthesize imageView = imageView;
-@synthesize renderedMark = _renderedMark;
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
+    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+    if (self) {		
+        _markView = [[UIImageView alloc] init];
+		[_markView setContentMode:UIViewContentModeCenter];
+		[_markView setOpaque:YES];
+		[_markView setUserInteractionEnabled:YES];
+		[_markView setBackgroundColor:[UIColor clearColor]];
+		
+		_borderLayer = [CALayer layer];
+		[_borderLayer setBackgroundColor:[[UIColor colorWithRed:224/255.0 green:224/255.0 blue:224/255.0 alpha:1.0] CGColor]];
+		[[_markView layer] addSublayer:_borderLayer];
+		
+		_backgroundMarkView = [[UIView alloc] init];
+		[_backgroundMarkView setUserInteractionEnabled:YES];
+		[_backgroundMarkView setOpaque:YES];
+		
+		_backgroundDefault = nil;
+		_backgroundHighlighted = nil;
+		
+		_selectedImage = nil;
+		_unselectedImage = nil;
+		
+		[self setMarked:NO];
+		[self setAlwaysShowMark:YES];
+    }
+	
+    return self;
+}
 
-- (void)drawRect:(CGRect)rect
-{    
-    _isSelected = NO;
+- (void)layoutSubviews {
+	[super layoutSubviews];
+	
+	if (!_alwaysShowMark) {
+		[_backgroundMarkView setFrame:CGRectMake(-27.0, 0.0, 32.0, self.contentView.frame.size.height)];
+		[_markView setFrame:[_backgroundMarkView frame]];
+	} else {
+		[_markView setFrame:CGRectMake(0.0, 0.0, kColumnPosition, self.contentView.frame.size.height)];
+	}
+	
+	[_borderLayer setFrame:CGRectMake(_markView.frame.size.width-1.0, _markView.frame.origin.y, 1.0, _markView.frame.size.height)];
+	
+	[self updateMarkViewIfNeeded];
+}
+
+- (void)willTransitionToState:(UITableViewCellStateMask)state {
+	[super willTransitionToState:state];
+	
+	if (!_alwaysShowMark && state & UITableViewCellStateShowingEditControlMask && !(state & UITableViewCellStateShowingDeleteConfirmationMask)) {
+		[self.contentView addSubview:_backgroundMarkView];
+		[self.contentView insertSubview:_markView aboveSubview:_backgroundMarkView];
+	} else if (_alwaysShowMark && state & UITableViewCellStateShowingEditControlMask && !(state & UITableViewCellStateShowingDeleteConfirmationMask)) {
+		[UIView animateWithDuration:kAnimationDuration
+							  delay:0.0
+							options:UIViewAnimationOptionCurveEaseOut
+						 animations:^{
+							 [_markView setAlpha:0.0];
+							 [self setIndentationLevel:0];
+							 [self setIndentationWidth:kColumnPosition];}
+						 completion:nil];
+	} else if (_alwaysShowMark && state == UITableViewCellStateDefaultMask) {
+		[UIView animateWithDuration:kAnimationDuration
+							  delay:0.0
+							options:UIViewAnimationOptionCurveEaseOut
+						 animations:^{
+							 [_markView setAlpha:1.0];
+							 [self setIndentationLevel:1];
+							 [self setIndentationWidth:kColumnPosition];}
+						 completion:nil];
+	}
+}
+
+- (void)didTransitionToState:(UITableViewCellStateMask)state {
+	[super didTransitionToState:state];
+	
+	if (!_alwaysShowMark && state == UITableViewCellStateDefaultMask) {
+		[_backgroundMarkView removeFromSuperview];
+		[_markView removeFromSuperview];
+	}
+}
+
+
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
+	if (!_alwaysShowMark && _backgroundMarkView.superview && CGRectContainsPoint(CGRectOffset(_backgroundMarkView.frame, _backgroundMarkView.frame.size.width, 0.0), point)) {
+		return _backgroundMarkView;
+	}
+	
+	return [super hitTest:point withEvent:event];
+}
+
+#pragma mark - Properties
+
+- (void)setAlwaysShowMark:(BOOL)alwaysShowMark {
+	if (alwaysShowMark && !_alwaysShowMark) {
+		[_backgroundMarkView removeFromSuperview];
+		[self.contentView addSubview:_markView];
+		[self setIndentationLevel:1];
+		[self setIndentationWidth:kColumnPosition];
+	} else if (!alwaysShowMark && _alwaysShowMark) {
+		[_markView setAlpha:1.0];
+		[self setIndentationLevel:0];
+		[self setIndentationWidth:kColumnPosition];
+	}
+	
+	_alwaysShowMark = alwaysShowMark;
+}
+
+- (void)setMarked:(BOOL)marked {
+	_marked = marked;
+	
+	[_markView setImage:(_marked ? self.markedImage : self.unmarkedImage)];
+}
+
+- (UIImage *)unmarkedImage {
+    if(_unselectedImage) {
+		return _unselectedImage;
+	}
+	    
+    UIGraphicsBeginImageContextWithOptions(kMarkImageSize, NO, [[UIScreen mainScreen] scale]);
     
-    CGFloat posY = (rect.size.height/2) - kCircleRadioUnselected/2;
-    
-    CGRect unselectedCircleRect = CGRectMake(kCircleLeftMargin, posY, kCircleRadioUnselected, kCircleRadioUnselected);
-    CGRect imageViewRect = CGRectMake(10, rect.size.height/2 - kCircleLeftMargin - 1, kMarkCell/2, kMarkCell/2);
-    
-    imageView.frame = imageViewRect; // Center the imageView
-    
-    UIBezierPath *unselectedCircle = [UIBezierPath bezierPathWithOvalInRect:unselectedCircleRect]; // Unselected circle centered
     CGContextRef ctx = UIGraphicsGetCurrentContext();
+    UIBezierPath *markCircle = [UIBezierPath bezierPathWithOvalInRect:kCircleRectUnselected];
     
-    /* Unselected circle */
+    /* Background */
     CGContextSaveGState(ctx);
     {
-        CGContextAddPath(ctx, unselectedCircle.CGPath);
+        CGContextAddPath(ctx, markCircle.CGPath);
         CGContextSetLineWidth(ctx, kStrokeWidth);
-        CGContextSetRGBFillColor(ctx, 1.0, 1.0, 1.0, 1.0);
+        CGContextSetRGBFillColor(ctx, 1.0, 1.0, 1.0, 0.0);
         CGContextSetRGBStrokeColor(ctx, 229/255.0, 229/255.0, 229/255.0, 1.0);
         CGContextDrawPath(ctx, kCGPathFillStroke);
     }
     CGContextRestoreGState(ctx);
+	
+    UIImage *unselectedMark = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
     
-    /* Column separator */
-    CGContextSetRGBStrokeColor(ctx, 224/255.0, 224/255.0, 224/255.0, 1.0);
-    CGContextSetLineWidth(ctx, 1.0);
-    CGContextMoveToPoint(ctx, kColumnPosition, .0);
-    CGContextAddLineToPoint(ctx, kColumnPosition, self.bounds.size.height);
-    CGContextSetShouldAntialias(ctx, NO);
-    CGContextStrokePath(ctx);
-    
-    [super drawRect:rect];
+	_unselectedImage = unselectedMark;
+	
+    return unselectedMark;
 }
 
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
-{
-    self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
-    if (self) {
-        label = [[UILabel alloc] initWithFrame:CGRectMake(kMarkCell, .0, self.frame.size.width - kMarkCell, self.frame.size.height)];
-        label.textColor = [UIColor blackColor];
-        label.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleHeight;
-        label.textAlignment = UITextAlignmentLeft;
-        label.backgroundColor = [UIColor clearColor];
-        [self.contentView addSubview:label];
-        
-        imageView = [UIImageView new];
-        [self.contentView addSubview:imageView];
-        
-        _renderedMark = [self renderMark];
-    }
-    return self;
-}
-
-#pragma mark - Properties
-- (void)setIsSelected:(BOOL)isSelected
-{
-    _isSelected = isSelected;
-    self.imageView.image = (isSelected) ? _renderedMark : nil;
-}
-
-- (UIImage *)renderMark
-{
-    if(_renderedMark)
-        return _renderedMark;
-    
-    if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)])
-        UIGraphicsBeginImageContextWithOptions(kMarkImageSize, NO, [UIScreen mainScreen].scale);
-    else
-        UIGraphicsBeginImageContext(kMarkImageSize);
+- (UIImage *)markedImage {
+    if(_selectedImage) {
+        return _selectedImage;
+	}
+	    
+    UIGraphicsBeginImageContextWithOptions(kMarkImageSize, NO, [[UIScreen mainScreen] scale]);
     
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     UIBezierPath *markCircle = [UIBezierPath bezierPathWithOvalInRect:kCircleRect];
@@ -157,7 +247,7 @@
     /* Mark */
     CGContextSaveGState(ctx);
     {
-        CGContextSetShadowWithColor(ctx, kMarkShadowOffset, .0, kMarkShadowColor.CGColor );
+        CGContextSetShadowWithColor(ctx, kMarkShadowOffset, 0.0, kMarkShadowColor.CGColor );
         CGContextMoveToPoint(ctx, kMarkBase.x, kMarkBase.y);
         CGContextAddLineToPoint(ctx, kMarkBase.x + kMarkHeight * sin(kMarkDegrees), kMarkBase.y + kMarkHeight * cos(kMarkDegrees));
         CGContextAddLineToPoint(ctx, kMarkDrawPoint.x, kMarkDrawPoint.y);
@@ -169,8 +259,77 @@
     
     UIImage *selectedMark = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
+	
+	_selectedImage = selectedMark;
     
     return selectedMark;
+}
+
+#pragma mark - Private
+
+- (void)updateMarkViewIfNeeded {
+	if ([_backgroundMarkView superview]) {
+		[self bringSubviewToFront:self.contentView];
+		
+		if (![self isHighlighted] && ![self isSelected]) {
+			if (!_backgroundDefault || (_backgroundDefault && !float_equal(_backgroundDefault.size.height, self.contentView.frame.size.height))) {
+				if (self.backgroundView) {
+					_backgroundDefault = [self takeScreenshot:self.backgroundView frame:[self.backgroundView convertRect:_backgroundMarkView.frame fromView:_backgroundMarkView.superview]];
+				} else {
+					CGSize imageSize = _backgroundMarkView.frame.size;
+					UIGraphicsBeginImageContextWithOptions(imageSize, YES, [[UIScreen mainScreen] scale]);
+					CGContextRef ctx = UIGraphicsGetCurrentContext();
+					
+					CGContextSaveGState(ctx);
+					{
+						CGContextSetFillColorWithColor(ctx, [[self backgroundColor] CGColor]);
+						CGContextFillRect(ctx, CGRectMake(0.0, 0.0, imageSize.width, imageSize.height));
+					}
+					CGContextRestoreGState(ctx);
+					
+					UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+					UIGraphicsEndImageContext();
+					
+					_backgroundDefault = image;
+				}
+			}
+		} else if (!_backgroundHighlighted || (_backgroundHighlighted && !float_equal(_backgroundHighlighted.size.height, self.contentView.frame.size.height))) {
+			if (self.selectedBackgroundView) {
+				_backgroundHighlighted = [self takeScreenshot:self.selectedBackgroundView frame:[self.selectedBackgroundView convertRect:_backgroundMarkView.frame fromView:_backgroundMarkView.superview]];
+			} else {
+				_backgroundHighlighted = [self takeScreenshot:self frame:CGRectMake(0.0, 0.0, 1.0, self.contentView.frame.size.height)];
+			}
+		}
+		
+		CGImageRef backgroundImage;
+		if ([self isHighlighted] || [self isSelected]) {
+			backgroundImage = [_backgroundHighlighted CGImage];
+		} else {
+			backgroundImage = [_backgroundDefault CGImage];
+		}
+		
+		if (_backgroundMarkView.layer.contents != (__bridge id)(backgroundImage)) {
+			[_backgroundMarkView.layer setContents:(__bridge id)backgroundImage];
+			[_backgroundMarkView setNeedsDisplay];
+		}
+	}
+}
+
+- (UIImage *)takeScreenshot:(UIView *)view frame:(CGRect)frame {
+	UIGraphicsBeginImageContextWithOptions(frame.size, YES, [[UIScreen mainScreen] scale]);
+	CGContextRef ctx = UIGraphicsGetCurrentContext();
+	
+	CGContextSaveGState(ctx);
+	{
+		CGContextTranslateCTM(ctx, -frame.origin.x, -frame.origin.y);
+		[view.layer renderInContext:UIGraphicsGetCurrentContext()];
+	}
+	CGContextRestoreGState(ctx);
+	
+	UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
+	
+	return image;
 }
 
 @end

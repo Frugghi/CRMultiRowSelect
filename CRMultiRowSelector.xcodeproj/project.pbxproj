@@ -15,6 +15,8 @@
 		07DE689A158E8B5200798DBA /* CRAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 07DE6899158E8B5200798DBA /* CRAppDelegate.m */; };
 		07DE68AB158E902900798DBA /* CRTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07DE68AA158E902900798DBA /* CRTableViewController.m */; };
 		07DE68AE158E915300798DBA /* CRTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 07DE68AD158E915300798DBA /* CRTableViewCell.m */; };
+		18CB65BA170C680100AD873F /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 18CB65B9170C680100AD873F /* QuartzCore.framework */; };
+		18FA195E170BB2580039ADA7 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 18FA195D170BB2580039ADA7 /* Default-568h@2x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +34,8 @@
 		07DE68AA158E902900798DBA /* CRTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CRTableViewController.m; sourceTree = "<group>"; };
 		07DE68AC158E915300798DBA /* CRTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CRTableViewCell.h; sourceTree = "<group>"; };
 		07DE68AD158E915300798DBA /* CRTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CRTableViewCell.m; sourceTree = "<group>"; };
+		18CB65B9170C680100AD873F /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		18FA195D170BB2580039ADA7 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -39,6 +43,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				18CB65BA170C680100AD873F /* QuartzCore.framework in Frameworks */,
 				07DE688A158E8B5200798DBA /* UIKit.framework in Frameworks */,
 				07DE688C158E8B5200798DBA /* Foundation.framework in Frameworks */,
 				07DE688E158E8B5200798DBA /* CoreGraphics.framework in Frameworks */,
@@ -51,6 +56,7 @@
 		07DE687A158E8B5200798DBA = {
 			isa = PBXGroup;
 			children = (
+				18FA195D170BB2580039ADA7 /* Default-568h@2x.png */,
 				07DE688F158E8B5200798DBA /* CRMultiRowSelector */,
 				07DE6888158E8B5200798DBA /* Frameworks */,
 				07DE6886158E8B5200798DBA /* Products */,
@@ -68,6 +74,7 @@
 		07DE6888158E8B5200798DBA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				18CB65B9170C680100AD873F /* QuartzCore.framework */,
 				07DE6889158E8B5200798DBA /* UIKit.framework */,
 				07DE688B158E8B5200798DBA /* Foundation.framework */,
 				07DE688D158E8B5200798DBA /* CoreGraphics.framework */,
@@ -127,7 +134,7 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = CR;
-				LastUpgradeCheck = 0430;
+				LastUpgradeCheck = 0460;
 			};
 			buildConfigurationList = 07DE687F158E8B5200798DBA /* Build configuration list for PBXProject "CRMultiRowSelector" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -152,6 +159,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				07DE6894158E8B5200798DBA /* InfoPlist.strings in Resources */,
+				18FA195E170BB2580039ADA7 /* Default-568h@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -188,6 +196,10 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -213,6 +225,10 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
