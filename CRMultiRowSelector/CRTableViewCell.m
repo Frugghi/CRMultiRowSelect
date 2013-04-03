@@ -146,7 +146,6 @@
 	}
 }
 
-
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
 	if (!_alwaysShowMark && _backgroundMarkView.superview && CGRectContainsPoint(CGRectOffset(_backgroundMarkView.frame, _backgroundMarkView.frame.size.width, 0.0), point)) {
 		return _backgroundMarkView;
@@ -156,6 +155,14 @@
 }
 
 #pragma mark - Properties
+
+- (void)setBorderColor:(UIColor *)borderColor {
+	[_borderLayer setBackgroundColor:[borderColor CGColor]];
+}
+
+- (UIColor *)borderColor {
+	return [UIColor colorWithCGColor:[_borderLayer backgroundColor]];
+}
 
 - (void)setMarkColor:(UIColor *)markColor_ {
 	CGFloat red;
@@ -278,7 +285,7 @@
     /* Mark */
     CGContextSaveGState(ctx);
     {
-        CGContextSetShadowWithColor(ctx, kMarkShadowOffset, 0.0, kMarkShadowColor.CGColor );
+        CGContextSetShadowWithColor(ctx, kMarkShadowOffset, 0.0, kMarkShadowColor.CGColor);
         CGContextMoveToPoint(ctx, kMarkBase.x, kMarkBase.y);
         CGContextAddLineToPoint(ctx, kMarkBase.x + kMarkHeight * sin(kMarkDegrees), kMarkBase.y + kMarkHeight * cos(kMarkDegrees));
         CGContextAddLineToPoint(ctx, kMarkDrawPoint.x, kMarkDrawPoint.y);

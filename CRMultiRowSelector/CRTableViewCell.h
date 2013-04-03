@@ -17,5 +17,6 @@
 @property (nonatomic, readonly, strong) UIImage *markedImage;
 @property (nonatomic, readonly, strong) UIImage *unmarkedImage;
 @property (nonatomic, strong) UIColor *markColor;
+@property (nonatomic, strong) UIColor *borderColor;
 
 @end
