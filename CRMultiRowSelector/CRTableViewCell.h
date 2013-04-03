@@ -11,6 +11,7 @@
 @interface CRTableViewCell : UITableViewCell
 
 @property (nonatomic, assign) BOOL alwaysShowMark;
+@property (nonatomic, assign, getter = isBorderHidden) BOOL borderHidden;
 @property (nonatomic, assign, getter = isMarked) BOOL marked;
 @property (nonatomic, readonly, strong) UIImageView *markView;
 @property (nonatomic, readonly, strong) UIImage *markedImage;

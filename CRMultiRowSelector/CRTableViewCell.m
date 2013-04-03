@@ -87,6 +87,7 @@
 		_selectedImage = nil;
 		_unselectedImage = nil;
 		
+		[self setBorderHidden:NO];
 		[self setMarked:NO];
 		[self setAlwaysShowMark:YES];
     }
@@ -104,7 +105,7 @@
 		[_markView setFrame:CGRectMake(0.0, 0.0, kColumnPosition, self.contentView.frame.size.height)];
 	}
 	
-	[_borderLayer setFrame:CGRectMake(_markView.frame.size.width-1.0, _markView.frame.origin.y, 1.0, _markView.frame.size.height)];
+	[_borderLayer setFrame:CGRectMake(_markView.frame.size.width-1.0, _markView.frame.origin.y, _borderHidden ? 0.0 : 1.0, _markView.frame.size.height)];
 	
 	[self updateMarkViewIfNeeded];
 }
@@ -173,6 +174,14 @@
 
 - (UIColor *)markColor {
 	return colorWithRGBHex(markColor);
+}
+
+- (void)setBorderHidden:(BOOL)borderHidden {
+	_borderHidden = borderHidden;
+	
+	CGRect borderFrame = _borderLayer.frame;
+	borderFrame.size.width = (_borderHidden ? 0.0 : 1.0);
+	[_borderLayer setFrame:borderFrame];
 }
 
 - (void)setAlwaysShowMark:(BOOL)alwaysShowMark {
