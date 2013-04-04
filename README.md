@@ -38,7 +38,8 @@ How To Use
     CRTableViewCell *cell = (CRTableViewCell *)[tableView dequeueReusableCellWithIdentifier:CRTableViewCellIdentifier];
     
     if (cell == nil) {
-        cell = [[CRTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CRTableViewCellIdentifier];
+        cell = [[CRTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
+                                      reuseIdentifier:CRTableViewCellIdentifier];
     }
     
     // Check if the cell is currently selected (marked)
@@ -63,11 +64,33 @@ How To Use
         [selectedMarks addObject:text];
     }
 
-    [tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
+    [tableView reloadRowsAtIndexPaths:[NSArray arrayWithObject:indexPath]
+                     withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 ```
 
- - You can customize the mark color (**setMarkColor**), the border color (**setBorderColor**) and the mark circle color (**setMarkCircleColor**)
+ - You can customize the mark color, the border color and the mark circle color
+
+```objective-c
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+
+    ...
+
+    if (cell == nil) {
+        cell = [[CRTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
+                                      reuseIdentifier:CRTableViewCellIdentifier];
+        [cell setMarkColor:[UIColor redColor]];
+        [cell setBorderColor:[UIColor blackColor]];
+        [cell setMarkCircleColor:[UIColor grayColor]];
+    }
+    
+    ...
+    
+    return cell;
+}
+```
+
 
  - Optionally you can get the selected cells using your previous declared **NSMutableArray** (example):
 
